@@ -6,8 +6,8 @@ import shutil
 import cv2
 from tqdm import tqdm
 
-DATA_DEST = r'C:\data'
-paths = glob(r'C:\Users\darek\Documents\kits19\visualization\case_*\*')
+DATA_DEST = '../data'
+paths = glob('../visualization/case_*/*')
 paths = [Path(x) for x in paths]
 
 

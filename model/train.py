@@ -9,7 +9,7 @@ import segmentation_models_pytorch as smp
 from dataset.base_augs import get_training_augmentation, get_preprocessing, get_validation_augmentation
 from dataset.dataset import Dataset
 
-DATA_DIR = Path(r'C:\data')
+DATA_DIR = Path('../data')
 x_train_dir = os.path.join(DATA_DIR, 'train')
 y_train_dir = os.path.join(DATA_DIR, 'trainannot')
 
@@ -52,8 +52,8 @@ valid_dataset = Dataset(
     classes=CLASSES,
 )
 
-train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=0)
-valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=0)
+train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
+valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
 
 
 # Dice/F1 score - https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
