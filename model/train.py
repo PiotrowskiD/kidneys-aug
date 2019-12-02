@@ -8,32 +8,34 @@ import segmentation_models_pytorch as smp
 
 import os.path
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from configs import config
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from dataset.base_augs import get_training_augmentation, get_preprocessing, get_validation_augmentation
 from dataset.dataset import Dataset
 
 
-
 class InterpolateWrapper(torch.nn.Module):
     def __init__(self, model, step=32):
         super().__init__()
-        
+
         self.model = model
         self.step = step
-        
+
     def forward(self, x):
         initial_size = list(x.size()[-2:])
-        interpolated_size = [(d // self.step) * self.step for d in initial_size] 
-        
+        interpolated_size = [(d // self.step) * self.step for d in initial_size]
+
         x = torch.nn.functional.interpolate(x, interpolated_size)
         x = self.model(x)
         x = torch.nn.functional.interpolate(x, initial_size)
 
         return x
 
-DATA_DIR = Path('data')
+
+DATA_DIR = Path(config.DATA_PATH)
 x_train_dir = os.path.join(DATA_DIR, 'train')
 y_train_dir = os.path.join(DATA_DIR, 'trainannot')
 
@@ -46,7 +48,7 @@ y_test_dir = os.path.join(DATA_DIR, 'testannot')
 ENCODER = 'se_resnext50_32x4d'
 ENCODER_WEIGHTS = 'imagenet'
 CLASSES = ['kidney', 'tumor']
-ACTIVATION = 'softmax' # could be None for logits or 'softmax2d' for multicalss segmentation
+ACTIVATION = 'softmax'  # could be None for logits or 'softmax2d' for multicalss segmentation
 DEVICE = 'cuda'
 
 # create segmentation model with pretrained encoder
@@ -60,7 +62,6 @@ model = smp.Unet(
 model = InterpolateWrapper(model)
 
 preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
-
 
 train_dataset = Dataset(
     x_train_dir,
@@ -79,7 +80,6 @@ valid_dataset = Dataset(
 
 train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
 valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
-
 
 # Dice/F1 score - https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
 # IoU/Jaccard score - https://en.wikipedia.org/wiki/Jaccard_index
