@@ -1,12 +1,11 @@
 import os
 import sys
 from pathlib import Path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from configs import config
 from dataset.base_augs import get_preprocessing
 from model.train import CLASSES
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from dataset.dataset import Dataset
 from torch.utils.data import DataLoader
@@ -68,18 +67,6 @@ metrics = [
     smp.utils.metrics.IoUMetric(threshold=0.5),
 ]
 
-model = smp.Unet(
-    encoder_name=ENCODER,
-    encoder_weights=ENCODER_WEIGHTS,
-    classes=len(CLASSES),
-    activation=ACTIVATION,
-)
-
-model = InterpolateWrapper(model)
-
-optimizer = torch.optim.Adam([
-    dict(params=model.parameters(), lr=0.0001),
-])
 
 test_epoch = smp.utils.train.ValidEpoch(
     model=best_model,

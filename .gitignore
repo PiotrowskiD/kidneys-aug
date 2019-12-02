@@ -1,3 +1,4 @@
+configs/*
 saved_models/*
 data/*
 .idea/workspace.xml
