@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from configs import config
 from dataset.base_augs import get_preprocessing
-from model.train import CLASSES
+
 
 from dataset.dataset import Dataset
 from torch.utils.data import DataLoader
@@ -33,6 +33,8 @@ class InterpolateWrapper(torch.nn.Module):
 
 model_path = os.path.join(config.MODELS, "base.pth")
 best_model = torch.load(model_path)
+
+
 
 DATA_DIR = Path(config.DATA_PATH)
 x_train_dir = os.path.join(DATA_DIR, 'train')
@@ -74,5 +76,5 @@ test_epoch = smp.utils.train.ValidEpoch(
     metrics=metrics,
     device=DEVICE,
 )
-
+print("test")
 logs = test_epoch.run(test_dataloader)
