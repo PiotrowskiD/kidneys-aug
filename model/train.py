@@ -6,10 +6,34 @@ import torch
 import numpy as np
 import segmentation_models_pytorch as smp
 
+import os.path
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+
 from dataset.base_augs import get_training_augmentation, get_preprocessing, get_validation_augmentation
 from dataset.dataset import Dataset
 
-DATA_DIR = Path('../data')
+
+
+class InterpolateWrapper(torch.nn.Module):
+    def __init__(self, model, step=32):
+        super().__init__()
+        
+        self.model = model
+        self.step = step
+        
+    def forward(self, x):
+        initial_size = list(x.size()[-2:])
+        interpolated_size = [(d // self.step) * self.step for d in initial_size] 
+        
+        x = torch.nn.functional.interpolate(x, interpolated_size)
+        x = self.model(x)
+        x = torch.nn.functional.interpolate(x, initial_size)
+
+        return x
+
+DATA_DIR = Path('data')
 x_train_dir = os.path.join(DATA_DIR, 'train')
 y_train_dir = os.path.join(DATA_DIR, 'trainannot')
 
@@ -22,16 +46,18 @@ y_test_dir = os.path.join(DATA_DIR, 'testannot')
 ENCODER = 'se_resnext50_32x4d'
 ENCODER_WEIGHTS = 'imagenet'
 CLASSES = ['kidney', 'tumor']
-ACTIVATION = 'sigmoid' # could be None for logits or 'softmax2d' for multicalss segmentation
+ACTIVATION = 'softmax' # could be None for logits or 'softmax2d' for multicalss segmentation
 DEVICE = 'cuda'
 
 # create segmentation model with pretrained encoder
-model = smp.FPN(
+model = smp.Unet(
     encoder_name=ENCODER,
     encoder_weights=ENCODER_WEIGHTS,
     classes=len(CLASSES),
     activation=ACTIVATION,
 )
+
+model = InterpolateWrapper(model)
 
 preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
 
@@ -47,7 +73,6 @@ train_dataset = Dataset(
 valid_dataset = Dataset(
     x_valid_dir,
     y_valid_dir,
-    augmentation=get_validation_augmentation(),
     preprocessing=get_preprocessing(preprocessing_fn),
     classes=CLASSES,
 )
@@ -96,10 +121,11 @@ for i in range(0, 40):
     print('\nEpoch: {}'.format(i))
     train_logs = train_epoch.run(train_loader)
     valid_logs = valid_epoch.run(valid_loader)
+    print(valid_logs.keys())
 
     # do something (save model, change lr, etc.)
-    if max_score < valid_logs['iou_score']:
-        max_score = valid_logs['iou_score']
+    if max_score < valid_logs['iou']:
+        max_score = valid_logs['iou']
         torch.save(model, './best_model.pth')
         print('Model saved!')
 

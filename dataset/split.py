@@ -8,15 +8,13 @@ from tqdm import tqdm
 
 DATA_DEST = 'data'
 paths = glob('data/visualization/case_*/*')
-paths = [Path(x) for x in paths]
-
 
 for img_path in tqdm(paths):
 
-    if not img_path.startswith("img"):
+    if not os.path.basename(img_path).startswith("img"):
         continue
     seg_img = cv2.imread(img_path.replace("img", "seg", 1), cv2.IMREAD_GRAYSCALE)
-    out_name = os.path.basename(img_path).replace("img", "img_" + str(img_path.split("\\")[6]))
+    out_name = os.path.basename(img_path).replace("img", "img_" + str(img_path.split("/")[2]))
     if 255 not in seg_img:
         if random.random() < 0.3:
             rnd = random.random()
