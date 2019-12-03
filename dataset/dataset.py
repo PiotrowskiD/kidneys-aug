@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data import Dataset as BaseDataset
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 from configs import config
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     dataset = Dataset(x_train_dir, y_train_dir, classes=['kidney'])
 
-    image, mask = dataset[4] # get some sample
+    image, mask = dataset[64] # get some sample
     visualize(
         image=image,
         cars_mask=mask.squeeze(),
