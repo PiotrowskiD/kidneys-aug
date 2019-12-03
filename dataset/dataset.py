@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     dataset = Dataset(x_train_dir, y_train_dir, classes=['kidney'])
 
-    image, mask = dataset[64] # get some sample
+    image, mask = dataset[127] # get some sample
     visualize(
         image=image,
         cars_mask=mask.squeeze(),

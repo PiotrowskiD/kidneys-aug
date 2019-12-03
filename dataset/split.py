@@ -10,8 +10,8 @@ import cv2
 from tqdm import tqdm
 
 from configs import config
-DATA_DEST = config.DATA_PATH
-paths = glob(config.ORIGINAL_DATA + '/visualization/case_*/*')
+DATA_DEST = config.DATA_PATH + "2"
+paths = glob(config.ORIGINAL_DATA + '/visualization2/case_*/*')
 
 for img_path in tqdm(paths):
 

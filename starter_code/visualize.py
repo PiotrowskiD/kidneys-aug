@@ -8,7 +8,7 @@ import cv2
 from starter_code.utils import load_case
 
 # Constants
-DEFAULT_KIDNEY_COLOR = [0, 255, 0]
+DEFAULT_KIDNEY_COLOR = [0, 0, 0]
 DEFAULT_TUMOR_COLOR = [0, 255, 0]
 DEFAULT_HU_MAX = 512
 DEFAULT_HU_MIN = -512
