@@ -47,8 +47,8 @@ y_test_dir = os.path.join(DATA_DIR, 'testannot')
 
 ENCODER = 'se_resnext50_32x4d'
 ENCODER_WEIGHTS = 'imagenet'
-CLASSES = ['kidney', 'tumor']
-ACTIVATION = 'softmax'  # could be None for logits or 'softmax2d' for multicalss segmentation
+CLASSES = ['kidney']
+ACTIVATION = 'sigmoid'  # could be None for logits or 'softmax2d' for multicalss segmentation
 DEVICE = 'cuda'
 
 # create segmentation model with pretrained encoder
@@ -66,7 +66,6 @@ preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
 train_dataset = Dataset(
     x_train_dir,
     y_train_dir,
-    augmentation=get_training_augmentation(),
     preprocessing=get_preprocessing(preprocessing_fn),
     classes=CLASSES,
 )

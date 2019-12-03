@@ -32,6 +32,16 @@ class InterpolateWrapper(torch.nn.Module):
 
         return x
 
+    def predict(self, x):
+        initial_size = list(x.size()[-2:])
+        interpolated_size = [(d // self.step) * self.step for d in initial_size]
+
+        x = torch.nn.functional.interpolate(x, interpolated_size)
+        x = self.model.predict(x)
+        x = torch.nn.functional.interpolate(x, initial_size)
+
+        return x
+
 
 model_path = os.path.join(config.MODELS, "base.pth")
 best_model = torch.load(model_path)
@@ -75,7 +85,7 @@ test_epoch = smp.utils.train.ValidEpoch(
     device=DEVICE,
 )
 
-logs = test_epoch.run(test_dataloader)
+#logs = test_epoch.run(test_dataloader)
 
 test_dataset_vis = Dataset(
     x_test_dir, y_test_dir,
@@ -93,7 +103,7 @@ def visualize(**images):
         plt.yticks([])
         plt.title(' '.join(name.split('_')).title())
         plt.imshow(image)
-    plt.savefig('test_imgs/viz.png')
+    plt.show()
 
 
 for i in range(5):
@@ -107,9 +117,13 @@ for i in range(5):
     x_tensor = torch.from_numpy(image).to(DEVICE).unsqueeze(0)
     pr_mask = best_model.predict(x_tensor)
     pr_mask = (pr_mask.squeeze().cpu().numpy().round())
-
-    visualize(
-        image=image_vis,
-        ground_truth_mask=gt_mask,
-        predicted_mask=pr_mask
-    )
+    for k in range(512):
+        for j in range(512):
+            if gt_mask[0,i,j] == 0:
+                print(i)
+                print(j)
+    # visualize(
+    #     image=image_vis,
+    #     ground_truth_mask=gt_mask,
+    #     predicted_mask=pr_mask
+    # )

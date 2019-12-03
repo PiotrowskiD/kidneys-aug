@@ -1,20 +1,21 @@
 from pathlib import Path
 import os.path
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from tqdm import tqdm
 
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from configs import config
+from tqdm import tqdm
 
 from starter_code import utils
 from starter_code import visualize
 
-DATAPATH = Path('../data/original/')
+DATAPATH = config.ORIGINAL_DATA
 
 if __name__ == '__main__':
 
     for idx in tqdm(range(210)):
         visualize.visualize(
-            idx, '../data/visualization/case_{:05d}'.format(idx),
-            data_path=DATAPATH,
+            idx, DATAPATH + '/visualization/case_{:05d}'.format(idx),
+            data_path=Path(DATAPATH),
             separate=True
         )

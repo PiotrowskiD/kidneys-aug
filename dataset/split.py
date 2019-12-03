@@ -6,8 +6,10 @@ import shutil
 import cv2
 from tqdm import tqdm
 
-DATA_DEST = 'data'
-paths = glob('data/visualization/case_*/*')
+from configs import config
+
+DATA_DEST = config.DATA_PATH
+paths = glob(config.ORIGINAL_DATA + '/visualization/case_*/*')
 
 for img_path in tqdm(paths):
 
@@ -16,7 +18,7 @@ for img_path in tqdm(paths):
     seg_img = cv2.imread(img_path.replace("img", "seg", 1), cv2.IMREAD_GRAYSCALE)
     out_name = os.path.basename(img_path).replace("img", "img_" + str(img_path.split("/")[2]))
     if 255 not in seg_img:
-        if random.random() < 0.3:
+        if random.random() < 0.1:
             rnd = random.random()
             if rnd < 0.1:
                 shutil.copy(img_path, os.path.join(DATA_DEST, "test/" + out_name))
