@@ -1,4 +1,5 @@
 configs/*
+configs/config.py
 saved_models/*
 data/*
 .idea/workspace.xml

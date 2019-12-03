@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader
 import segmentation_models_pytorch as smp
 import torch
 import matplotlib.pyplot as plt
-
+import cv2
 
 class InterpolateWrapper(torch.nn.Module):
     def __init__(self, model, step=32):
@@ -101,9 +101,13 @@ def visualize(**images):
         plt.subplot(1, n, i + 1)
         plt.xticks([])
         plt.yticks([])
-        plt.title(' '.join(name.split('_')).title())
+        plt.title(' '.join(name.split('_')).title())        
         plt.imshow(image)
+<<<<<<< Updated upstream
     plt.show()
+=======
+    plt.savefig('test_imgs/' + prefix + "viz.png")
+>>>>>>> Stashed changes
 
 
 for i in range(5):
@@ -115,6 +119,7 @@ for i in range(5):
     gt_mask = gt_mask.squeeze()
 
     x_tensor = torch.from_numpy(image).to(DEVICE).unsqueeze(0)
+<<<<<<< Updated upstream
     pr_mask = best_model.predict(x_tensor)
     pr_mask = (pr_mask.squeeze().cpu().numpy().round())
     for k in range(512):
@@ -127,3 +132,15 @@ for i in range(5):
     #     ground_truth_mask=gt_mask,
     #     predicted_mask=pr_mask
     # )
+=======
+    pr_mask = best_model.model.predict(x_tensor)
+   
+    #pr_mask = (pr_mask.squeeze().cpu().numpy().round())
+    pr_kidney = pr_mask[0,:,:]
+    norm_mask = cv2.normalize(pr_kidney, None)
+    norm_mask = norm_mask.astype(np.uint8)    
+    for i in range(1,255):
+        if i in pr_mask[0,:,:]:
+            print(i)
+
+>>>>>>> Stashed changes

@@ -1,3 +1,3 @@
-DATA_PATH = r'C:\data'
-MODELS = r'../../models/'
-ORIGINAL_DATA = r'C:\Users\darek\Documents\kits19\data'
+DATA_PATH = 'data/'
+MODELS = 'saved_models/'
+ORIGINAL_DATA = 'data/original/data'

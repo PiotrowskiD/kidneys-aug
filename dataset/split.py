@@ -1,4 +1,7 @@
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 import random
 from glob import glob
 from pathlib import Path
@@ -7,7 +10,6 @@ import cv2
 from tqdm import tqdm
 
 from configs import config
-
 DATA_DEST = config.DATA_PATH
 paths = glob(config.ORIGINAL_DATA + '/visualization/case_*/*')
 

@@ -9,10 +9,10 @@ import segmentation_models_pytorch as smp
 import os.path
 import sys
 
-from configs import config
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from configs import config
 from dataset.base_augs import get_training_augmentation, get_preprocessing, get_validation_augmentation
 from dataset.dataset import Dataset
 
@@ -59,7 +59,7 @@ model = smp.Unet(
     activation=ACTIVATION,
 )
 
-model = InterpolateWrapper(model)
+#model = InterpolateWrapper(model)
 
 preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
 
@@ -120,7 +120,6 @@ for i in range(0, 40):
     print('\nEpoch: {}'.format(i))
     train_logs = train_epoch.run(train_loader)
     valid_logs = valid_epoch.run(valid_loader)
-    print(valid_logs.keys())
 
     # do something (save model, change lr, etc.)
     if max_score < valid_logs['iou']:

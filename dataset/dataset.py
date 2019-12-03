@@ -51,10 +51,17 @@ class Dataset(BaseDataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         mask = cv2.imread(self.masks_ids[i], 0)
 
+        if np.shape(image)[1] != 512:
+            image = cv2.resize(image, (512,512))
+            mask = cv2.resize(mask, (512, 512))
+
+
         # extract certain classes from mask (e.g. cars)
         masks = [(mask == v) for v in self.class_values]
         mask = np.stack(masks, axis=-1).astype('float')
 
+        
+        
         # apply augmentations
         if self.augmentation:
             sample = self.augmentation(image=image, mask=mask)
@@ -63,7 +70,9 @@ class Dataset(BaseDataset):
         # apply preprocessing
         if self.preprocessing:
             sample = self.preprocessing(image=image, mask=mask)
+            
             image, mask = sample['image'], sample['mask']
+
 
         return image, mask
 
