@@ -15,8 +15,9 @@ for img_path in tqdm(paths):
 
     if not os.path.basename(img_path).startswith("img"):
         continue
-    seg_img = cv2.imread(img_path.replace("img", "seg", 1), cv2.IMREAD_GRAYSCALE)
-    out_name = os.path.basename(img_path).replace("img", "img_" + str(img_path.split("/")[2]))
+    seg_img = cv2.imread(img_path.replace("img", "seg", 1))
+    dir_name = str(Path(img_path).parent.as_posix()).split("/")[-1]
+    out_name = os.path.basename(img_path).replace("img", "img_" + dir_name)
     if 255 not in seg_img:
         if random.random() < 0.1:
             rnd = random.random()
