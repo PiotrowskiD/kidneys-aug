@@ -27,6 +27,7 @@ class SegmentationDataset(Dataset):
 
         if self.masks is not None:
             mask = utils.imread(self.masks[idx])
+
             result["mask"] = mask
 
         if self.transforms is not None:

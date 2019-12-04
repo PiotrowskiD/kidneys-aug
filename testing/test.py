@@ -75,7 +75,7 @@ test_dataloader = DataLoader(test_dataset)
 
 loss = smp.utils.losses.DiceLoss()
 metrics = [
-    smp.utils.metrics.IoUMetric(threshold=0.5),
+    smp.utils.metrics.IoUMetric(eps=1., threshold=0.5, activation=None),
 ]
 
 test_epoch = smp.utils.train.ValidEpoch(

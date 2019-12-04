@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     for idx in tqdm(range(210)):
         visualize.visualize(
-            idx, DATAPATH + '/visualization2/case_{:05d}'.format(idx),
+            idx, DATAPATH + '/visualization-multi/case_{:05d}'.format(idx),
             data_path=Path(DATAPATH),
             separate=True
         )

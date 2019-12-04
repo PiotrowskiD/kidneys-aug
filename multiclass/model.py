@@ -34,7 +34,7 @@ train_transforms = compose([
 ])
 valid_transforms = compose([pre_transforms(), post_transforms()])
 
-model = smp.Unet(encoder_name="resnext50_32x4d", classes=2)
+model = smp.Unet(encoder_name="resnext50_32x4d", classes=2, activation='sigmoid')
 
 # we have multiple criterions
 criterion = {

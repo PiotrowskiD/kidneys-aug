@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from configs import config
 DATA_DEST = config.DATA_PATH
-paths = glob(config.ORIGINAL_DATA + '/visualization/case_*/*')
+paths = glob(config.ORIGINAL_DATA + '/visualization-multi/case_*/*')
 
 for img_path in tqdm(paths):
 

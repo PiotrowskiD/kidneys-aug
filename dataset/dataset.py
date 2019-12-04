@@ -22,9 +22,9 @@ def visualize(**images):
         plt.imshow(image)
     plt.show()
 
-class Dataset(BaseDataset):
 
-    CLASSES = ['kidney']
+class Dataset(BaseDataset):
+    CLASSES = ['kidney', 'tumor']
 
     def __init__(
             self,
@@ -39,7 +39,7 @@ class Dataset(BaseDataset):
         self.masks_ids = [os.path.join(masks_dir, image_id) for image_id in self.ids]
 
         # convert str names to class values on masks
-        self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
+        self.class_values = [[255, 0, 0], [0, 255, 0]]
 
         self.augmentation = augmentation
         self.preprocessing = preprocessing
@@ -49,19 +49,18 @@ class Dataset(BaseDataset):
         # read data
         image = cv2.imread(self.images_ids[i])
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        mask = cv2.imread(self.masks_ids[i], 0)
+        mask = cv2.imread(self.masks_ids[i])
 
         if np.shape(image)[1] != 512:
-            image = cv2.resize(image, (512,512))
-            mask = cv2.resize(mask, (512, 512))
-
+            image = cv2.resize(image, (512, 512, 3))
+            mask = cv2.resize(mask, (512, 512, 3))
 
         # extract certain classes from mask (e.g. cars)
-        masks = [(mask == v) for v in self.class_values]
+        mask_kidney = mask[:, :, 0] == 255
+        mask_tumor = mask[:, :, 1] == 255
+        masks = [mask_kidney, mask_tumor]
         mask = np.stack(masks, axis=-1).astype('float')
 
-        
-        
         # apply augmentations
         if self.augmentation:
             sample = self.augmentation(image=image, mask=mask)
@@ -70,9 +69,8 @@ class Dataset(BaseDataset):
         # apply preprocessing
         if self.preprocessing:
             sample = self.preprocessing(image=image, mask=mask)
-            
-            image, mask = sample['image'], sample['mask']
 
+            image, mask = sample['image'], sample['mask']
 
         return image, mask
 
@@ -93,7 +91,7 @@ if __name__ == "__main__":
 
     dataset = Dataset(x_train_dir, y_train_dir, classes=['kidney'])
 
-    image, mask = dataset[127] # get some sample
+    image, mask = dataset[127]  # get some sample
     visualize(
         image=image,
         cars_mask=mask.squeeze(),

@@ -47,7 +47,7 @@ y_test_dir = os.path.join(DATA_DIR, 'testannot')
 
 ENCODER = 'se_resnext50_32x4d'
 ENCODER_WEIGHTS = 'imagenet'
-CLASSES = ['kidney']
+CLASSES = ['kidney', 'tumor']
 ACTIVATION = 'sigmoid'  # could be None for logits or 'softmax2d' for multicalss segmentation
 DEVICE = 'cuda'
 
@@ -85,7 +85,7 @@ valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_worker
 
 loss = smp.utils.losses.DiceLoss()
 metrics = [
-    smp.utils.metrics.IoUMetric(threshold=0.5),
+    smp.utils.metrics.IoUMetric(threshold=0.5, eps=1.),
 ]
 
 optimizer = torch.optim.Adam([
