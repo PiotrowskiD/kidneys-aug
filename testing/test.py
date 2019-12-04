@@ -43,7 +43,7 @@ class InterpolateWrapper(torch.nn.Module):
         return x
 
 
-model_path = os.path.join(config.MODELS, "base.pth")
+model_path = os.path.join(config.MODELS, "best_model.pth")
 best_model = torch.load(model_path)
 
 DATA_DIR = Path(config.DATA_PATH)
@@ -106,7 +106,7 @@ def visualize(**images):
     plt.show()
 
 
-for i in range(20):
+for i in range(10):
     n = np.random.choice(len(test_dataset))
     image_vis = test_dataset_vis[n][0].astype('uint8')
     image, gt_mask = test_dataset[n]
