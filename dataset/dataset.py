@@ -39,7 +39,7 @@ class Dataset(BaseDataset):
         self.masks_ids = [os.path.join(masks_dir, image_id) for image_id in self.ids]
 
         # convert str names to class values on masks
-        self.class_values = [[255, 0, 0], [0, 255, 0]]
+        self.class_values = [self.CLASSES.index(cls.lower()) for cls in classes]
 
         self.augmentation = augmentation
         self.preprocessing = preprocessing
