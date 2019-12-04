@@ -1,11 +1,18 @@
 from pathlib import Path
 from typing import List
+<<<<<<< Updated upstream
 
 import cv2
 from torch.utils.data import Dataset
 from catalyst import utils
 import numpy as np
 
+=======
+import numpy as np
+from torch.utils.data import Dataset
+from catalyst import utils
+import cv2
+>>>>>>> Stashed changes
 
 class SegmentationDataset(Dataset):
     def __init__(
@@ -32,6 +39,7 @@ class SegmentationDataset(Dataset):
 
         if np.shape(image)[1] != 512:
             image = cv2.resize(image, (512, 512))
+
 
         if self.masks is not None:
             mask = cv2.imread(self.masks[idx])

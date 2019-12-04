@@ -1,3 +1,12 @@
+multiclass/__pycache__/
+
+data2
+data2/*
+configs
+logs
+logs/*
+dataset/__pycache__/dataset.cpython-37.pyc
+starter_code/__pycache__/visualize.cpython-37.pyc
 configs/*
 configs/config.py
 saved_models/*

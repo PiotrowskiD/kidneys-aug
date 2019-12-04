@@ -23,7 +23,9 @@ def visualize(**images):
     plt.show()
 
 
+
 class Dataset(BaseDataset):
+
     CLASSES = ['kidney', 'tumor']
 
     def __init__(
