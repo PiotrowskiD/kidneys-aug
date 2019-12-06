@@ -17,5 +17,6 @@ if __name__ == '__main__':
         visualize.visualize(
             idx, DATAPATH + 'visualization-perspectives/case_{:05d}'.format(idx),
             data_path=Path(DATAPATH),
-            separate=True
+            separate=True,
+            plane='all'
         )
