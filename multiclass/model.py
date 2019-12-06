@@ -1,3 +1,8 @@
+import os.path
+import sys
+
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from pathlib import Path
 
 import segmentation_models_pytorch as smp
@@ -34,7 +39,8 @@ train_transforms = compose([
 ])
 valid_transforms = compose([pre_transforms(), post_transforms()])
 
-model = smp.Unet(encoder_name="resnext50_32x4d", classes=2, activation='sigmoid')
+
+model = smp.Unet(encoder_name="resnext50_32x4d", classes=2, activation = 'sigmoid')
 
 # we have multiple criterions
 criterion = {

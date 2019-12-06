@@ -77,8 +77,8 @@ valid_dataset = Dataset(
     classes=CLASSES,
 )
 
-train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=0)
-valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=0)
+train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
+valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
 
 # Dice/F1 score - https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
 # IoU/Jaccard score - https://en.wikipedia.org/wiki/Jaccard_index
