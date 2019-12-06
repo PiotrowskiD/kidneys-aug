@@ -56,7 +56,7 @@ def overlay(volume_ims, segmentation_ims, segmentation, alpha):
     return overlayed
 
 
-def visualize(cid, destination, data_path,  hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT_HU_MAX,
+def visualize(cid, destination, data_path, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT_HU_MAX,
               k_color=DEFAULT_KIDNEY_COLOR, t_color=DEFAULT_TUMOR_COLOR,
               alpha=DEFAULT_OVERLAY_ALPHA, plane=DEFAULT_PLANE, separate=False):
     plane = plane.lower()
@@ -73,7 +73,7 @@ def visualize(cid, destination, data_path,  hu_min=DEFAULT_HU_MIN, hu_max=DEFAUL
 
     os.makedirs(out_path, exist_ok=True)
 
-        # Load segmentation and volume
+    # Load segmentation and volume
     vol, seg = load_case(cid, data_path)
     spacing = vol.affine
     vol = vol.get_data()
@@ -85,7 +85,7 @@ def visualize(cid, destination, data_path,  hu_min=DEFAULT_HU_MIN, hu_max=DEFAUL
     seg_ims = class_to_color(seg, k_color, t_color)
 
     # Save individual images to disk
-    if plane == plane_opts[0]:
+    if plane == plane_opts[0] or plane == 'all':
         # Overlay the segmentation colors
         if not separate:
             viz_ims = overlay(vol_ims, seg_ims, seg, alpha)
@@ -94,13 +94,12 @@ def visualize(cid, destination, data_path,  hu_min=DEFAULT_HU_MIN, hu_max=DEFAUL
                 cv2.imwrite(str(fpath), viz_ims[i])
         else:
             for i in range(vol_ims.shape[0]):
-                seg_path = out_path / ("seg_{:05d}.png".format(i))
-                img_path = out_path / ("img_{:05d}.png".format(i))
+                seg_path = out_path / ("a_seg_{:05d}.png".format(i))
+                img_path = out_path / ("a_img_{:05d}.png".format(i))
                 cv2.imwrite(str(seg_path), seg_ims[i])
                 cv2.imwrite(str(img_path), vol_ims[i])
 
-
-    if plane == plane_opts[1]:
+    if plane == plane_opts[1] or plane == 'all':
         # I use sum here to account for both legacy (incorrect) and
         # fixed affine matrices
         spc_ratio = np.abs(np.sum(spacing[2, :])) / np.abs(np.sum(spacing[0, :]))
@@ -124,10 +123,17 @@ def visualize(cid, destination, data_path,  hu_min=DEFAULT_HU_MIN, hu_max=DEFAUL
                     int(vol_ims.shape[2])
                 ), interp="nearest"
             )
-            viz_im = overlay(vol_im, seg_im, sim, alpha)
-            scipy.misc.imsave(str(fpath), viz_im)
 
-    if plane == plane_opts[2]:
+            if not separate:
+                viz_im = overlay(vol_im, seg_im, sim, alpha)
+                cv2.imwrite(str(fpath), viz_im)
+            else:
+                seg_path = out_path / ("c_seg_{:05d}.png".format(i))
+                img_path = out_path / ("c_img_{:05d}.png".format(i))
+                cv2.imwrite(str(seg_path), seg_im)
+                cv2.imwrite(str(img_path), vol_im)
+
+    if plane == plane_opts[2] or plane == 'all':
         # I use sum here to account for both legacy (incorrect) and
         # fixed affine matrices
         spc_ratio = np.abs(np.sum(spacing[2, :])) / np.abs(np.sum(spacing[1, :]))
@@ -151,12 +157,20 @@ def visualize(cid, destination, data_path,  hu_min=DEFAULT_HU_MIN, hu_max=DEFAUL
                     int(vol_ims.shape[1])
                 ), interp="nearest"
             )
-            viz_im = overlay(vol_im, seg_im, sim, alpha)
-            scipy.misc.imsave(str(fpath), viz_im)
+
+            if not separate:
+                viz_im = overlay(vol_im, seg_im, sim, alpha)
+                cv2.imwrite(str(fpath), viz_im)
+            else:
+                seg_path = out_path / ("s_seg_{:05d}.png".format(i))
+                img_path = out_path / ("s_img_{:05d}.png".format(i))
+                cv2.imwrite(str(seg_path), seg_im)
+                cv2.imwrite(str(img_path), vol_im)
+
 
 def visualize_object(nibvol, nibseg, destination, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT_HU_MAX,
-              k_color=DEFAULT_KIDNEY_COLOR, t_color=DEFAULT_TUMOR_COLOR,
-              alpha=DEFAULT_OVERLAY_ALPHA, plane=DEFAULT_PLANE):
+                     k_color=DEFAULT_KIDNEY_COLOR, t_color=DEFAULT_TUMOR_COLOR,
+                     alpha=DEFAULT_OVERLAY_ALPHA, plane=DEFAULT_PLANE):
     plane = plane.lower()
 
     plane_opts = ["axial", "coronal", "sagittal"]
@@ -244,6 +258,7 @@ def visualize_object(nibvol, nibseg, destination, hu_min=DEFAULT_HU_MIN, hu_max=
             )
             viz_im = overlay(vol_im, seg_im, sim, alpha)
             scipy.misc.imsave(str(fpath), viz_im)
+
 
 if __name__ == '__main__':
     # Parse command line arguments
