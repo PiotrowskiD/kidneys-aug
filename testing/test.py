@@ -43,22 +43,16 @@ class InterpolateWrapper(torch.nn.Module):
         return x
 
 
-model_path = os.path.join(config.MODELS, "best_model.pth")
+model_path = os.path.join(config.MODELS, "base_aug.pth")
 best_model = torch.load(model_path)
 
 DATA_DIR = Path(config.DATA_PATH)
-x_train_dir = os.path.join(DATA_DIR, 'train')
-y_train_dir = os.path.join(DATA_DIR, 'trainannot')
-
-x_valid_dir = os.path.join(DATA_DIR, 'val')
-y_valid_dir = os.path.join(DATA_DIR, 'valannot')
-
 x_test_dir = os.path.join(DATA_DIR, 'test')
 y_test_dir = os.path.join(DATA_DIR, 'testannot')
 
 ENCODER = 'se_resnext50_32x4d'
 ENCODER_WEIGHTS = 'imagenet'
-CLASSES = ['kidney']
+CLASSES = ['kidney', 'tumor']
 ACTIVATION = 'sigmoid'  # could be None for logits or 'softmax2d' for multicalss segmentation
 DEVICE = 'cuda'
 
@@ -75,7 +69,7 @@ test_dataloader = DataLoader(test_dataset)
 
 loss = smp.utils.losses.DiceLoss()
 metrics = [
-    smp.utils.metrics.IoUMetric(eps=1., threshold=0.5, activation=None),
+    smp.utils.metrics.IoUMetric(eps=1., threshold=0.5),
 ]
 
 test_epoch = smp.utils.train.ValidEpoch(
@@ -102,23 +96,26 @@ def visualize(**images):
         plt.xticks([])
         plt.yticks([])
         plt.title(' '.join(name.split('_')).title())
-        plt.imshow(image)
+        if np.shape(image)[0] == 2:
+            plt.imshow(image[1, :, :])
+        else:
+            plt.imshow(image)
     plt.show()
 
 
-for i in range(10):
-    n = np.random.choice(len(test_dataset))
-    image_vis = test_dataset_vis[n][0].astype('uint8')
-    image, gt_mask = test_dataset[n]
-
-    gt_mask = gt_mask.squeeze()
-
-    x_tensor = torch.from_numpy(image).to(DEVICE).unsqueeze(0)
-    pr_mask = best_model.predict(x_tensor)
-    pr_mask = (pr_mask.squeeze().cpu().numpy().round())
-
-    visualize(
-        image=image_vis,
-        ground_truth_mask=gt_mask,
-        predicted_mask=pr_mask
-    )
+# for i in range(10):
+#     n = np.random.choice(len(test_dataset))
+#     image_vis = test_dataset_vis[n][0].astype('uint8')
+#     image, gt_mask = test_dataset[n]
+#
+#     gt_mask = gt_mask.squeeze()
+#
+#     x_tensor = torch.from_numpy(image).to(DEVICE).unsqueeze(0)
+#     pr_mask = best_model.predict(x_tensor)
+#     pr_mask = (pr_mask.squeeze().cpu().numpy().round())
+#
+#     visualize(
+#         image=image_vis,
+#         ground_truth_mask=gt_mask,
+#         predicted_mask=pr_mask
+#     )

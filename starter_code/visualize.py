@@ -5,6 +5,8 @@ import imageio
 import scipy.misc
 import numpy as np
 import cv2
+import skimage
+
 from starter_code.utils import load_case
 
 # Constants
@@ -61,7 +63,7 @@ def visualize(cid, destination, data_path, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT
               alpha=DEFAULT_OVERLAY_ALPHA, plane=DEFAULT_PLANE, separate=False):
     plane = plane.lower()
 
-    plane_opts = ["axial", "coronal", "sagittal"]
+    plane_opts = ["axial", "coronal", "sagittal", "all"]
     if plane not in plane_opts:
         raise ValueError((
                              "Plane \"{}\" not understood. "
@@ -105,19 +107,19 @@ def visualize(cid, destination, data_path, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT
         spc_ratio = np.abs(np.sum(spacing[2, :])) / np.abs(np.sum(spacing[0, :]))
         for i in range(vol_ims.shape[1]):
             fpath = out_path / ("{:05d}.png".format(i))
-            vol_im = scipy.misc.imresize(
+            vol_im = skimage.transform.resize(
                 vol_ims[:, i, :], (
                     int(vol_ims.shape[0] * spc_ratio),
                     int(vol_ims.shape[2])
                 ), interp="bicubic"
             )
-            seg_im = scipy.misc.imresize(
+            seg_im = skimage.transform.resize(
                 seg_ims[:, i, :], (
                     int(vol_ims.shape[0] * spc_ratio),
                     int(vol_ims.shape[2])
                 ), interp="nearest"
             )
-            sim = scipy.misc.imresize(
+            sim = skimage.transform.resize(
                 seg[:, i, :], (
                     int(vol_ims.shape[0] * spc_ratio),
                     int(vol_ims.shape[2])
@@ -139,19 +141,19 @@ def visualize(cid, destination, data_path, hu_min=DEFAULT_HU_MIN, hu_max=DEFAULT
         spc_ratio = np.abs(np.sum(spacing[2, :])) / np.abs(np.sum(spacing[1, :]))
         for i in range(vol_ims.shape[2]):
             fpath = out_path / ("{:05d}.png".format(i))
-            vol_im = scipy.misc.imresize(
+            vol_im = skimage.transform.resize(
                 vol_ims[:, :, i], (
                     int(vol_ims.shape[0] * spc_ratio),
                     int(vol_ims.shape[1])
                 ), interp="bicubic"
             )
-            seg_im = scipy.misc.imresize(
+            seg_im = skimage.transform.resize(
                 seg_ims[:, :, i], (
                     int(vol_ims.shape[0] * spc_ratio),
                     int(vol_ims.shape[1])
                 ), interp="nearest"
             )
-            sim = scipy.misc.imresize(
+            sim = skimage.transform.resize(
                 seg[:, :, i], (
                     int(vol_ims.shape[0] * spc_ratio),
                     int(vol_ims.shape[1])
