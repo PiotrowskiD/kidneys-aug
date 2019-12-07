@@ -16,6 +16,8 @@ from configs import config
 from dataset.base_augs import get_training_augmentation, get_preprocessing, get_validation_augmentation
 from dataset.dataset import Dataset
 
+from torch import nn
+
 
 class InterpolateWrapper(torch.nn.Module):
     def __init__(self, model, step=32):
@@ -58,7 +60,7 @@ model = smp.Unet(
     classes=len(CLASSES),
     activation=ACTIVATION,
 )
-
+model=nn.DataParallel(model)
 #model = InterpolateWrapper(model)
 
 preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)

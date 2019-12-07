@@ -53,9 +53,10 @@ class Dataset(BaseDataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         mask = cv2.imread(self.masks_ids[i])
 
-        if np.shape(image)[1] != 512:
+        if np.shape(image)[1] != 512 or np.shape(image)[0] != 512:
             image = cv2.resize(image, (512, 512))
             mask = cv2.resize(mask, (512, 512))
+
 
         # extract certain classes from mask (e.g. cars)
         mask_kidney = mask[:, :, 0] == 255
