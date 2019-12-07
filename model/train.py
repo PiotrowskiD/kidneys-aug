@@ -9,7 +9,6 @@ import segmentation_models_pytorch as smp
 import os.path
 import sys
 
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from configs import config
@@ -17,25 +16,6 @@ from dataset.base_augs import get_training_augmentation, get_preprocessing, get_
 from dataset.dataset import Dataset
 
 from torch import nn
-
-
-class InterpolateWrapper(torch.nn.Module):
-    def __init__(self, model, step=32):
-        super().__init__()
-
-        self.model = model
-        self.step = step
-
-    def forward(self, x):
-        initial_size = list(x.size()[-2:])
-        interpolated_size = [(d // self.step) * self.step for d in initial_size]
-
-        x = torch.nn.functional.interpolate(x, interpolated_size)
-        x = self.model(x)
-        x = torch.nn.functional.interpolate(x, initial_size)
-
-        return x
-
 
 DATA_DIR = Path(config.DATA_PATH)
 x_train_dir = os.path.join(DATA_DIR, 'train')
@@ -53,82 +33,88 @@ CLASSES = ['kidney', 'tumor']
 ACTIVATION = 'sigmoid'  # could be None for logits or 'softmax2d' for multicalss segmentation
 DEVICE = 'cuda'
 
-# create segmentation model with pretrained encoder
-model = smp.Unet(
-    encoder_name=ENCODER,
-    encoder_weights=ENCODER_WEIGHTS,
-    classes=len(CLASSES),
-    activation=ACTIVATION,
-)
-model=nn.DataParallel(model)
-#model = InterpolateWrapper(model)
+if __name__ == "__main__":
 
-preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
+    aug_list = config.AUGS
 
-train_dataset = Dataset(
-    x_train_dir,
-    y_train_dir,
-    preprocessing=get_preprocessing(preprocessing_fn),
-    classes=CLASSES,
-)
+    for aug_name, aug_func in aug_list.items():
+        # create segmentation model with pretrained encoder
+        model = smp.Unet(
+            encoder_name=ENCODER,
+            encoder_weights=ENCODER_WEIGHTS,
+            classes=len(CLASSES),
+            activation=ACTIVATION,
+        )
+        model = nn.DataParallel(model)
 
-valid_dataset = Dataset(
-    x_valid_dir,
-    y_valid_dir,
-    preprocessing=get_preprocessing(preprocessing_fn),
-    classes=CLASSES,
-)
+        preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
 
-train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
-valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
+        train_dataset = Dataset(
+            x_train_dir,
+            y_train_dir,
+            augmentation=aug_func,
+            preprocessing=get_preprocessing(preprocessing_fn),
+            classes=CLASSES,
+        )
 
-# Dice/F1 score - https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
-# IoU/Jaccard score - https://en.wikipedia.org/wiki/Jaccard_index
+        valid_dataset = Dataset(
+            x_valid_dir,
+            y_valid_dir,
+            augmentation=aug_func,
+            preprocessing=get_preprocessing(preprocessing_fn),
+            classes=CLASSES,
+        )
 
-loss = smp.utils.losses.DiceLoss()
-metrics = [
-    smp.utils.metrics.IoUMetric(threshold=0.5, eps=1.),
-]
+        train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=12)
+        valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=4)
 
-optimizer = torch.optim.Adam([
-    dict(params=model.parameters(), lr=0.0001),
-])
+        # Dice/F1 score - https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient
+        # IoU/Jaccard score - https://en.wikipedia.org/wiki/Jaccard_index
 
-# create epoch runners
-# it is a simple loop of iterating over dataloader`s samples
-train_epoch = smp.utils.train.TrainEpoch(
-    model,
-    loss=loss,
-    metrics=metrics,
-    optimizer=optimizer,
-    device=DEVICE,
-    verbose=True,
-)
+        loss = smp.utils.losses.DiceLoss()
+        metrics = [
+            smp.utils.metrics.IoUMetric(threshold=0.5, eps=1.),
+        ]
 
-valid_epoch = smp.utils.train.ValidEpoch(
-    model,
-    loss=loss,
-    metrics=metrics,
-    device=DEVICE,
-    verbose=True,
-)
+        optimizer = torch.optim.Adam([
+            dict(params=model.parameters(), lr=0.0001),
+        ])
 
-# train model for 40 epochs
+        # create epoch runners
+        # it is a simple loop of iterating over dataloader`s samples
+        train_epoch = smp.utils.train.TrainEpoch(
+            model,
+            loss=loss,
+            metrics=metrics,
+            optimizer=optimizer,
+            device=DEVICE,
+            verbose=True,
+        )
 
-max_score = 0
+        valid_epoch = smp.utils.train.ValidEpoch(
+            model,
+            loss=loss,
+            metrics=metrics,
+            device=DEVICE,
+            verbose=True,
+        )
 
-for i in range(0, 40):
+        # train model for 40 epochs
 
-    print('\nEpoch: {}'.format(i))
-    train_logs = train_epoch.run(train_loader)
-    valid_logs = valid_epoch.run(valid_loader)
+        max_score = 0
 
-    # do something (save model, change lr, etc.)
-    if max_score < valid_logs['iou']:
-        max_score = valid_logs['iou']
-        torch.save(model, './best_model.pth')
-        print('Model saved!')
+        for i in range(0, 40):
 
-    if i == 25:
-        optimizer.param_groups[0]['lr'] = 1e-5
-        print('Decrease decoder learning rate to 1e-5!')
+            print('\nEpoch: {}'.format(i))
+            train_logs = train_epoch.run(train_loader)
+            valid_logs = valid_epoch.run(valid_loader)
+
+            # do something (save model, change lr, etc.)
+            if max_score < valid_logs['iou']:
+                max_score = valid_logs['iou']
+                torch.save(model, os.path.join(config.MODELS, aug_name + '_model.pth'))
+                print('Model saved!')
+
+            if i == 25:
+                optimizer.param_groups[0]['lr'] = 1e-5
+                print('Decrease decoder learning rate to 1e-5!')

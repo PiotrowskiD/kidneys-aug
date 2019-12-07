@@ -1,5 +1,6 @@
-from random import randrange, uniform
-
+import os
+from random import randrange, uniform, random
+from matplotlib import pyplot as plt
 import cv2
 import numpy as np
 from PIL import Image
@@ -8,8 +9,10 @@ from albumentations import (
     GridDistortion, ElasticTransform,
     IAAAffine)
 
+from configs import config
 
-def warp(image, mask, alpha, sigma):
+
+def warp(image, mask, alpha=40, sigma=5):
     aug = ElasticTransform(alpha=alpha, sigma=sigma, p=1.)
     augmented = aug(image=image, mask=mask)
     return augmented['image'], augmented['mask']
@@ -31,7 +34,10 @@ def flip_tb(image, mask):
     return np.asarray(im_pil.transpose(Image.FLIP_LEFT_RIGHT)), np.asarray(mask_pil.transpose(Image.FLIP_TOP_BOTTOM))
 
 
-def rotate(image, mask, angle=90):
+def rotate(image, mask, angle=None):
+    if not angle:
+        angles = [90, 180, 270]
+        angle = random.choice(angles)
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
     msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
@@ -52,7 +58,9 @@ def rotate_rnd(image, mask):
     return np.asarray(im_pil.rotate(angle)), np.asarray(mask_pil.rotate(angle))
 
 
-def blur(image, mask, radius=2):
+def blur(image, mask, radius=None):
+    if not radius:
+        radius = randrange(0, 3)
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
     msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
@@ -83,7 +91,9 @@ def smooth(image, mask):
     return np.asarray(im_pil.filter(ImageFilter.SMOOTH)), np.asarray(mask_pil.filter(ImageFilter.SMOOTH))
 
 
-def posterize(image, mask, bits=5):
+def posterize(image, mask, bits=None):
+    if not bits:
+        bits = randrange(5, 8)
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
     msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
@@ -159,3 +169,17 @@ def affine(image, mask):
     aug = IAAAffine(mode="constant", p=1.)
     augmented = aug(image=image, mask=mask)
     return augmented['image'], augmented['mask']
+
+
+if __name__ == '__main__':
+    aug_list = config.AUGS
+
+    for key, func in aug_list.items():
+        print(key)
+        img = cv2.imread(os.path.join(config.DATA_PATH, 'test/img_case_00000_00291.png'))
+        mask = cv2.imread(os.path.join(config.DATA_PATH, 'testannot/img_case_00000_00291.png'))
+        plt.imshow(img)
+        plt.show()
+        img, mask = func(img, mask)
+        plt.imshow(img)
+        plt.show()

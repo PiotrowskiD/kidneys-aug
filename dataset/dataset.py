@@ -1,4 +1,5 @@
 import os
+import random
 from pathlib import Path
 
 import cv2
@@ -66,8 +67,8 @@ class Dataset(BaseDataset):
 
         # apply augmentations
         if self.augmentation:
-            sample = self.augmentation(image=image, mask=mask)
-            image, mask = sample['image'], sample['mask']
+            if random.random() > 0.5:
+                image, mask = self.augmentation(image=image, mask=mask)
 
         # apply preprocessing
         if self.preprocessing:
