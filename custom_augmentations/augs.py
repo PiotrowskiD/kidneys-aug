@@ -12,7 +12,9 @@ from albumentations import (
 from configs import config
 
 
-def warp(image, mask, alpha=40, sigma=5):
+def warp(image, mask):
+    alpha = randrange(30, 45)
+    sigma = randrange(3, 7)
     aug = ElasticTransform(alpha=alpha, sigma=sigma, p=1.)
     augmented = aug(image=image, mask=mask)
     return augmented['image'], augmented['mask']
@@ -63,10 +65,7 @@ def blur(image, mask, radius=None):
         radius = randrange(0, 3)
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
-    msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-    mask_pil = Image.fromarray(msk)
-    return np.asarray(im_pil.filter(ImageFilter.GaussianBlur(radius))), np.asarray(
-        mask_pil.filter(ImageFilter.GaussianBlur(radius)))
+    return np.asarray(im_pil.filter(ImageFilter.GaussianBlur(radius))), mask
 
 
 def sharp(image, mask):
@@ -74,21 +73,15 @@ def sharp(image, mask):
 
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
-    msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-    mask_pil = Image.fromarray(msk)
 
     enhancer = ImageEnhance.Sharpness(im_pil)
-    enhancer_msk = ImageEnhance.Sharpness(mask_pil)
-
-    return np.asarray(enhancer.enhance(factor)), np.asarray(enhancer_msk.enhance(factor))
+    return np.asarray(enhancer.enhance(factor)), mask
 
 
 def smooth(image, mask):
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
-    msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-    mask_pil = Image.fromarray(msk)
-    return np.asarray(im_pil.filter(ImageFilter.SMOOTH)), np.asarray(mask_pil.filter(ImageFilter.SMOOTH))
+    return np.asarray(im_pil.filter(ImageFilter.SMOOTH)), mask
 
 
 def posterize(image, mask, bits=None):
@@ -96,9 +89,7 @@ def posterize(image, mask, bits=None):
         bits = randrange(5, 8)
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
-    msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-    mask_pil = Image.fromarray(msk)
-    return np.asarray(ImageOps.posterize(im_pil, bits)), np.asarray(ImageOps.posterize(mask_pil, bits))
+    return np.asarray(ImageOps.posterize(im_pil, bits)), mask
 
 
 def colour_adj(image, mask):
@@ -106,13 +97,9 @@ def colour_adj(image, mask):
 
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
-    msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-    mask_pil = Image.fromarray(msk)
 
     enhancer = ImageEnhance.Color(im_pil)
-    enhancer_msk = ImageEnhance.Color(mask_pil)
-
-    return np.asarray(enhancer.enhance(factor)), np.asarray(enhancer_msk.enhance(factor))
+    return np.asarray(enhancer.enhance(factor)), mask
 
 
 def brightness_adj(image, mask):
@@ -120,21 +107,17 @@ def brightness_adj(image, mask):
 
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
-    msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-    mask_pil = Image.fromarray(msk)
 
     enhancer = ImageEnhance.Brightness(im_pil)
-    enhancer_msk = ImageEnhance.Brightness(mask_pil)
 
-    return np.asarray(enhancer.enhance(factor)), np.asarray(enhancer_msk.enhance(factor))
+    return np.asarray(enhancer.enhance(factor)), mask
 
 
 def normalize_contrast(image, mask):
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
-    msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-    mask_pil = Image.fromarray(msk)
-    return np.asarray(ImageOps.autocontrast(im_pil)), np.asarray(ImageOps.autocontrast(mask_pil))
+
+    return np.asarray(ImageOps.autocontrast(im_pil)), mask
 
 
 def contrast_adj(image, mask):
@@ -142,21 +125,17 @@ def contrast_adj(image, mask):
 
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
-    msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-    mask_pil = Image.fromarray(msk)
 
     enhancer = ImageEnhance.Contrast(im_pil)
-    enhancer_msk = ImageEnhance.Contrast(mask_pil)
 
-    return np.asarray(enhancer.enhance(factor)), np.asarray(enhancer_msk.enhance(factor))
+    return np.asarray(enhancer.enhance(factor)), mask
 
 
 def normalize_contrast(image, mask):
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
-    msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
-    mask_pil = Image.fromarray(msk)
-    return np.asarray(ImageOps.equalize(im_pil)), np.asarray(ImageOps.equalize(mask_pil))
+
+    return np.asarray(ImageOps.equalize(im_pil)), mask
 
 
 def grid_distortion(image, mask, num_steps=5, limit=0.3):

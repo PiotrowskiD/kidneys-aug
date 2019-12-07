@@ -58,17 +58,18 @@ class Dataset(BaseDataset):
             image = cv2.resize(image, (512, 512))
             mask = cv2.resize(mask, (512, 512))
 
-
-        # extract certain classes from mask (e.g. cars)
-        mask_kidney = mask[:, :, 0] == 255
-        mask_tumor = mask[:, :, 1] == 255
-        masks = [mask_kidney, mask_tumor]
-        mask = np.stack(masks, axis=-1).astype('float')
-
         # apply augmentations
         if self.augmentation:
             if random.random() > 0.5:
                 image, mask = self.augmentation(image=image, mask=mask)
+
+
+        mask_kidney = mask[:, :, 0] == 255
+        mask_tumor = mask[:, :, 1] == 255
+        masks = [mask_kidney, mask_tumor]
+        mask = np.stack(masks, axis=-1).astype('float')
+ 
+
 
         # apply preprocessing
         if self.preprocessing:
