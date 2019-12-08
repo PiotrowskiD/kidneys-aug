@@ -1,5 +1,5 @@
 import os
-from random import randrange, uniform, random
+from random import randrange, uniform, choice
 from matplotlib import pyplot as plt
 import cv2
 import numpy as np
@@ -7,15 +7,15 @@ from PIL import Image
 from PIL import ImageFilter, ImageEnhance, ImageOps
 from albumentations import (
     GridDistortion, ElasticTransform,
-    IAAAffine)
+    IAAAffine, IAAPiecewiseAffine)
 
 from configs import config
 
 
 def warp(image, mask):
     alpha = randrange(30, 45)
-    sigma = randrange(3, 7)
-    aug = ElasticTransform(alpha=alpha, sigma=sigma, p=1.)
+    sigma = randrange(5, 7)
+    aug = ElasticTransform(alpha=alpha, sigma=sigma, p=1., border_mode=cv2.BORDER_CONSTANT)
     augmented = aug(image=image, mask=mask)
     return augmented['image'], augmented['mask']
 
@@ -33,13 +33,13 @@ def flip_tb(image, mask):
     im_pil = Image.fromarray(img)
     msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
     mask_pil = Image.fromarray(msk)
-    return np.asarray(im_pil.transpose(Image.FLIP_LEFT_RIGHT)), np.asarray(mask_pil.transpose(Image.FLIP_TOP_BOTTOM))
+    return np.asarray(im_pil.transpose(Image.FLIP_TOP_BOTTOM)), np.asarray(mask_pil.transpose(Image.FLIP_TOP_BOTTOM))
 
 
 def rotate(image, mask, angle=None):
     if not angle:
         angles = [90, 180, 270]
-        angle = random.choice(angles)
+        angle = choice(angles)
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
     msk = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
@@ -92,18 +92,8 @@ def posterize(image, mask, bits=None):
     return np.asarray(ImageOps.posterize(im_pil, bits)), mask
 
 
-def colour_adj(image, mask):
-    factor = uniform(0.65, 0.99)
-
-    img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    im_pil = Image.fromarray(img)
-
-    enhancer = ImageEnhance.Color(im_pil)
-    return np.asarray(enhancer.enhance(factor)), mask
-
-
 def brightness_adj(image, mask):
-    factor = uniform(0.65, 0.99)
+    factor = uniform(0.5, 2)
 
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
@@ -121,7 +111,7 @@ def normalize_contrast(image, mask):
 
 
 def contrast_adj(image, mask):
-    factor = uniform(0.65, 0.99)
+    factor = uniform(0.5, 2)
 
     img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     im_pil = Image.fromarray(img)
@@ -139,13 +129,14 @@ def normalize_contrast(image, mask):
 
 
 def grid_distortion(image, mask, num_steps=5, limit=0.3):
-    aug = GridDistortion(num_steps=num_steps, distort_limit=limit, p=1.)
+    aug = GridDistortion(num_steps=num_steps, distort_limit=limit, p=1., border_mode=cv2.BORDER_CONSTANT)
     augmented = aug(image=image, mask=mask)
     return augmented['image'], augmented['mask']
 
 
 def affine(image, mask):
-    aug = IAAAffine(mode="constant", p=1.)
+    scale = uniform(0.015, 0.075)
+    aug = IAAPiecewiseAffine(mode="constant", p=1., scale=scale)
     augmented = aug(image=image, mask=mask)
     return augmented['image'], augmented['mask']
 
@@ -154,11 +145,14 @@ if __name__ == '__main__':
     aug_list = config.AUGS
 
     for key, func in aug_list.items():
-        print(key)
-        img = cv2.imread(os.path.join(config.DATA_PATH, 'test/img_case_00000_00291.png'))
-        mask = cv2.imread(os.path.join(config.DATA_PATH, 'testannot/img_case_00000_00291.png'))
-        plt.imshow(img)
-        plt.show()
+        img = cv2.imread(os.path.join(config.DATA_PATH, 'test/img_case_00002_00165.png'))
+        mask = cv2.imread(os.path.join(config.DATA_PATH, 'testannot/img_case_00002_00165.png'))
         img, mask = func(img, mask)
-        plt.imshow(img)
-        plt.show()
+        cv2.imwrite(os.path.join(r'C:\Users\darek\OneDrive\mgr\wybrane metody zdjecia', key + ".png"), img)
+
+    # for i in range(5):
+    #     img = cv2.imread(os.path.join(config.DATA_PATH, 'test/img_case_00002_00165.png'))
+    #     mask = cv2.imread(os.path.join(config.DATA_PATH, 'testannot/img_case_00002_00165.png'))
+    #     img, mask = warp(img, mask)
+    #     plt.imshow(img)
+    #     plt.show()
