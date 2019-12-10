@@ -1,4 +1,5 @@
 import os
+import random
 from random import randrange, uniform, choice
 from matplotlib import pyplot as plt
 import cv2
@@ -139,6 +140,21 @@ def affine(image, mask):
     aug = IAAPiecewiseAffine(mode="constant", p=1., scale=scale)
     augmented = aug(image=image, mask=mask)
     return augmented['image'], augmented['mask']
+
+
+def no_aug(image, mask):
+    return image, mask
+
+
+def contrast_warp_affine_rotate(image, mask):
+    image, mask = rotate_rnd(image, mask)
+    image, mask = contrast_adj(image, mask)
+    if random.random() < 0.7:
+        image, mask = warp(image, mask)
+    if random.random() < 0.7:
+        image, mask = affine(image, mask)
+    return image, mask
+
 
 
 if __name__ == '__main__':

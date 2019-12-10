@@ -7,7 +7,7 @@ def get_training_augmentation():
 
         albu.ShiftScaleRotate(scale_limit=0.5, rotate_limit=0, shift_limit=0.1, p=1, border_mode=0),
 
-        albu.PadIfNeeded(min_height=320, min_width=320, always_apply=True, border_mode=0),
+        albu.PadIfNeeded(min_height=512, min_width=512, always_apply=True, border_mode=0),
         albu.RandomCrop(height=320, width=320, always_apply=True),
 
         albu.IAAAdditiveGaussianNoise(p=0.2),
@@ -16,7 +16,7 @@ def get_training_augmentation():
         albu.OneOf(
             [
                 albu.CLAHE(p=1),
-                albu.RandomBrightness(p=1),
+                albu.RandomBrightnessContrast(p=1),
                 albu.RandomGamma(p=1),
             ],
             p=0.9,
@@ -44,7 +44,7 @@ def get_training_augmentation():
 def get_validation_augmentation():
     """Add paddings to make image shape divisible by 32"""
     test_transform = [
-        albu.PadIfNeeded(384, 480)
+        albu.PadIfNeeded(512, 512)
     ]
     return albu.Compose(test_transform)
 
