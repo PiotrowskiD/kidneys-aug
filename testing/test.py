@@ -32,7 +32,7 @@ def visualize(**images):
 
 
 if __name__ == "__main__":
-    show_images = "false"
+    show_images = False
     DATA_DIR = Path(config.DATA_PATH)
     x_test_dir = os.path.join(DATA_DIR, 'test')
     y_test_dir = os.path.join(DATA_DIR, 'testannot')
@@ -45,7 +45,8 @@ if __name__ == "__main__":
 
     for file in os.listdir(config.MODELS):
         if file.endswith(".pth"):
-            best_model = torch.load(file)
+            print(file)
+            best_model = torch.load(os.path.join(config.MODELS,file))
             preprocessing_fn = smp.encoders.get_preprocessing_fn(ENCODER, ENCODER_WEIGHTS)
 
             test_dataset = Dataset(
