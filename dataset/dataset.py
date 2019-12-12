@@ -24,9 +24,7 @@ def visualize(**images):
     plt.show()
 
 
-
 class Dataset(BaseDataset):
-
     CLASSES = ['kidney', 'tumor']
 
     def __init__(
@@ -36,6 +34,7 @@ class Dataset(BaseDataset):
             classes=None,
             augmentation=None,
             preprocessing=None,
+            aug_prob=0.5,
     ):
         self.ids = os.listdir(images_dir)
         self.images_ids = [os.path.join(images_dir, image_id) for image_id in self.ids]
@@ -46,6 +45,7 @@ class Dataset(BaseDataset):
 
         self.augmentation = augmentation
         self.preprocessing = preprocessing
+        self.aug_prob = aug_prob
 
     def __getitem__(self, i):
 
@@ -60,16 +60,13 @@ class Dataset(BaseDataset):
 
         # apply augmentations
         if self.augmentation:
-            if random.random() > 0.5:
+            if random.random() < self.aug_prob:
                 image, mask = self.augmentation(image=image, mask=mask)
-
 
         mask_kidney = mask[:, :, 0] == 255
         mask_tumor = mask[:, :, 1] == 255
         masks = [mask_kidney, mask_tumor]
         mask = np.stack(masks, axis=-1).astype('float')
- 
-
 
         # apply preprocessing
         if self.preprocessing:

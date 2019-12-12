@@ -8,8 +8,8 @@ from PIL import Image
 from PIL import ImageFilter, ImageEnhance, ImageOps
 from albumentations import (
     GridDistortion, ElasticTransform,
-    IAAAffine, IAAPiecewiseAffine)
-
+    IAAAffine, IAAPiecewiseAffine, IAAPerspective, IAAAdditiveGaussianNoise)
+import albumentations as albu
 from configs import config
 
 
@@ -156,6 +156,88 @@ def contrast_warp_affine_rotate(image, mask):
     return image, mask
 
 
+def wa(image, mask):
+    aug_func = choice([warp, affine])
+    return aug_func(image, mask)
+
+
+def cr(image, mask):
+    aug_func = choice([contrast_adj, rotate_rnd])
+    return aug_func(image, mask)
+
+
+def ar(image, mask):
+    aug_func = choice([affine, rotate_rnd])
+    return aug_func(image, mask)
+
+
+def cw(image, mask):
+    aug_func = choice([contrast_adj, warp])
+    return aug_func(image, mask)
+
+
+def wr(image, mask):
+    aug_func = choice([warp, rotate_rnd])
+    return aug_func(image, mask)
+
+
+def ca(image, mask):
+    aug_func = choice([contrast_adj, affine])
+    return aug_func(image, mask)
+
+
+def perspective(image, mask):
+    aug = IAAPerspective(p=1.)
+    augmented = aug(image=image, mask=mask)
+    return augmented['image'], augmented['mask']
+
+
+def noise(image, mask):
+    aug = IAAAdditiveGaussianNoise(p=1.)
+    augmented = aug(image=image, mask=mask)
+    return augmented['image'], augmented['mask']
+
+
+def default_adjusted(image, mask):
+    alpha = randrange(30, 45)
+    sigma = randrange(5, 7)
+    scale = uniform(0.015, 0.075)
+    train_transform = [
+
+        albu.ShiftScaleRotate(scale_limit=0.2, rotate_limit=0, shift_limit=0.1, p=1, border_mode=0),
+
+        albu.PadIfNeeded(min_height=512, min_width=512, always_apply=True, border_mode=0),
+
+        albu.IAAAdditiveGaussianNoise(p=0.2),
+        albu.IAAPerspective(p=0.5),
+
+        albu.OneOf(
+            [
+                albu.CLAHE(p=1),
+                albu.RandomBrightnessContrast(p=1),
+                albu.RandomGamma(p=1),
+            ],
+            p=0.9,
+        ),
+        albu.OneOf(
+            [
+
+                albu.RandomBrightnessContrast(brightness_limit=0, p=1),
+                albu.HueSaturationValue(p=1),
+            ],
+            p=0.9,
+        ),
+        albu.OneOf(
+            [
+                albu.ElasticTransform(alpha=alpha, sigma=sigma, p=1, border_mode=cv2.BORDER_CONSTANT),
+                albu.IAAAffine(scale=scale, p=1, mode="constant"),
+            ],
+            p=0.7,
+        ),
+    ]
+    aug_func = albu.Compose(train_transform)
+    augmented = aug_func(image=image, mask=mask)
+    return augmented['image'], augmented['mask']
 
 if __name__ == '__main__':
     aug_list = config.AUGS
