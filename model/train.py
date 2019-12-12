@@ -112,7 +112,7 @@ if __name__ == "__main__":
             # do something (save model, change lr, etc.)
             if max_score < valid_logs['iou']:
                 max_score = valid_logs['iou']
-                torch.save(model, os.path.join(config.MODELS, aug_name + '_model2.pth'))
+                torch.save(model, os.path.join(config.MODELS, aug_name + '_model07.pth'))
                 print('Model saved!')
 
             if i == 25:
